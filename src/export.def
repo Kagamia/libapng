@@ -1,0 +1,6 @@
+LIBRARY
+EXPORTS
+  apng_init @1
+  apng_append_frame @2
+  apng_write_end @3
+  apng_destroy @4
