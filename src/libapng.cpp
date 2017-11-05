@@ -179,6 +179,7 @@ APNG_API(ApngError) apng_append_frame(ApngEncoder *pEnc, void* pData, int x, int
 			pDest += rowbytes;
 		}
 		bmpData.Scan0 = pixels;
+		bmpData.Stride = rowbytes;
 	}
 
 	//bgra->rgba
@@ -218,9 +219,7 @@ APNG_API(ApngError) apng_append_frame(ApngEncoder *pEnc, void* pData, int x, int
 	//Idat
 	write_IDATs(pEnc, pEnc->zbuf, zsize, pEnc->idat_size);
 
-	if (optimize) {
-		free(bmpData.Scan0);
-	}
+	free(bmpData.Scan0);
 
 	pEnc->frameCount++;
 	return ApngError::Success;
