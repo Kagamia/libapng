@@ -209,8 +209,22 @@ APNG_API(ApngError) apng_append_frame(ApngEncoder *pEnc, void* pData, int x, int
 		png_save_uint_32(buf_fcTL + 8, bmpData.Height);
 		png_save_uint_32(buf_fcTL + 12, x);
 		png_save_uint_32(buf_fcTL + 16, y);
-		png_save_uint_16(buf_fcTL + 20, delay_ms);
-		png_save_uint_16(buf_fcTL + 22, 1000);
+		if (delay_ms % 1000 == 0) {
+			png_save_uint_16(buf_fcTL + 20, delay_ms / 1000);
+			png_save_uint_16(buf_fcTL + 22, 1);
+		} 
+		else if (delay_ms % 100 == 0) {
+			png_save_uint_16(buf_fcTL + 20, delay_ms / 100);
+			png_save_uint_16(buf_fcTL + 22, 10);
+		}
+		else if (delay_ms % 10 == 0) {
+			png_save_uint_16(buf_fcTL + 20, delay_ms / 10);
+			png_save_uint_16(buf_fcTL + 22, 0); //default=100
+		}
+		else {
+			png_save_uint_16(buf_fcTL + 20, delay_ms);
+			png_save_uint_16(buf_fcTL + 22, 1000);
+		}
 		buf_fcTL[24] = PNG_DISPOSE_OP_BACKGROUND;
 		buf_fcTL[25] = PNG_BLEND_OP_SOURCE;
 		write_chunk(pEnc, "fcTL", buf_fcTL, 26);
@@ -630,7 +644,7 @@ void deflate_rect_fin(ApngEncoder *pEnc, BitmapData *image, bool filter, unsigne
 	fin_zstream.next_out = pEnc->zbuf;
 	fin_zstream.avail_out = pEnc->zbuf_size;
 	fin_zstream.next_in = pEnc->dest;
-	fin_zstream.avail_in = image->Height * rowbytes;
+	fin_zstream.avail_in = image->Height * (rowbytes + 1);
 	deflate(&fin_zstream, Z_FINISH);
 	*zsize = (unsigned int)fin_zstream.total_out;
 	deflateEnd(&fin_zstream);
